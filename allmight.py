@@ -41,7 +41,7 @@ class Parse(object):
                     else:
                         result.append(splited)
         if translate:
-            return Parse.list_translate(result, column_counts = len(columns))
+            return Parse._list_translate(result, column_counts = len(columns))
 
         return result
 
@@ -52,7 +52,10 @@ class Parse(object):
             result += [ [filename] + column_data for column_data in Parse.csv(file_path, columns=columns, start_row=start_row, delimiters = delimiters, translate = True)]
         return result
 
-    def list_translate(data_list, column_counts = None):
+    def list_translate(data_list):
+            return Parse._list_translate(data_list)
+
+    def _list_translate(data_list, column_counts = None):
             column_counts = column_counts if column_counts else max([len(row_data) for row_data in data_list])
             return [ [ data_list[row][column] for row in range(len(data_list))] for column in range(column_counts)]
 
@@ -82,4 +85,5 @@ file_list = Parse.file_in_path("C:/Users/rawr/Downloads/")
 result_a  = Parse.multiple_csv(file_list, 0, [1,3])
 # reslut_b  = Parse.csv(file_name, 0, [1,3])
 
-Parse.print(Parse.list_translate(result_a))
+# Parse.print(Parse.list_translate(result_a), length=10)
+print(Parse.unit("a"))
