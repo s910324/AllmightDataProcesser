@@ -41,9 +41,8 @@ class Parse(object):
                         result.append([ data for column, data in enumerate(splited) if column in columns])
                     else:
                         result.append(splited)
-                    column_counter.append(result[-1])
+                    column_counter.append(len(result[-1]))
 
-        
         max_column     = max(column_counter)
         column_delta   = [ (max_column-column_count) for column_count in column_counter ]
         if (any(column_delta)):
@@ -61,7 +60,8 @@ class Parse(object):
         for file_path in file_list:
             filename = re.split(r"[\\\/.]", file_path)[-2]
             result += [ [filename] + column_data for column_data in Parse.csv(file_path, columns=columns, start_row=start_row, delimiters = delimiters, translate = True)]
-        return result
+        return Parse._list_translate(result, column_counts= len(result[0]))
+
 
     def list_translate(data_list):
             return Parse._list_translate(data_list)
@@ -81,17 +81,33 @@ class Parse(object):
             result += group
         return result
     
-    def print(data_list):
-        result = []
-        for row_data in data_list:
-            result.append(",   ".join(row_data))
+    def print(data_list, show_index = True, pretty = True):
+        result       = []
+        column_width = []
+
+            for row, row_data in enumerate(data_list):
+                if not(column_width):
+                    column_width = [0 for column in range(len(row_data))]
+
+                for column, column_data in enumerate(row_data):
+                    column_width[column] = len(column_data) if (column_width[column] < len(column_data)) else column_width[column] 
+
+
+        
+        index_rjust = len(str(len(data_list)))
+        for row, row_data in enumerate(data_list):
+            row_string = ", ".join([column_data.rjust(column_width[column])for column, column_data in enumerate(row_data)])
+            if show_index:
+                row_string = str(row).rjust(index_rjust) + ", " + row_string
+            result.append(row_string)
+
         print ("\n".join(result))
 
 
 # file_name = "C:/Users/rawr/Downloads/MOCK_DATA.csv"
-# file_list = Parse.file_in_path("C:/Users/rawr/Downloads/")
-# result_a  = Parse.multiple_csv(file_list, 0, [1,3])
+file_list = Parse.file_in_path("C:/Users/rawr/Downloads/")
+result_a  = Parse.multiple_csv(file_list, 0, [3])
 # reslut_b  = Parse.csv(file_name, 0, [1,4])
 # Parse.print(Parse.list_translate(reslut_b))
-# Parse.print(Parse.list_translate(result_a))
-print(Parse.unit("a"))
+Parse.print(result_a, False)
+# print(Parse.unit("a"))

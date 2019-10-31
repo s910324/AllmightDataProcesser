@@ -11,11 +11,18 @@ unit(data_str, out_fmt = "%.3e", if_error = None)
 
 ... data_str = "12.34keV"
 ... Parse.unit(data_str)
->>> "1.234e4" #output will remove postfix 'eV'
+>>> "1.234e4" #output will also remove postfix 'eV'
 
 ... data_str = "abc"
 ... Parse.unit(data_str)
->>> None #error relpacement value can be specified by 'if_error' parameter
+... #error relpacement value can be specified by 'if_error' parameter
+... #None returns original string
+>>> "abc" 
+
+... data_str = "abc"
+... Parse.unit(data_str, if_error = "N/A")
+>>> "N/A"
+
 ```
 
 ------
@@ -60,14 +67,14 @@ csv(file_path, start_row = 0, columns = [], delimiters = "[,]+", translate = Fal
     	[  "0 mV",     "0 uA"],
     	["200 mV",   "800 uA"],
     	["400 mv",   "6.4 mA"],
-    				.
-    				.
-    				.
+    			.
+    			.
+    			.
     	[ "1.8 V", "583.2 mA"]
 	]
 
 
-... Parse.csv(file_name, columns = [1, 3], delimiters = ["\t"], translate = True)
+... Parse.csv(file_name, columns = [1, 2], delimiters = ["\t"], translate = True)
 >>> [
     	["mosfet_IV", "20191231", "IV_Curve", "voltage", "0 mV", ...    "1.8 V"], 
     	[         "",         "",         "", "current", "0 uA", ... "583.2 mA"]
@@ -81,9 +88,9 @@ csv(file_path, start_row = 0, columns = [], delimiters = "[,]+", translate = Fal
     	[  "0 mV",     "0 uA"],
     	["200 mV",   "800 uA"],
     	["400 mv",   "6.4 mA"],
-    				.
-    				.
-    				.
+    			.
+    			.
+    			.
     	[ "1.8 V", "583.2 mA"]
 	]
 ```
@@ -108,10 +115,10 @@ Sample file structure:
 
 ```python
 ... folder_path= "./"
-... file_in_path(folder_path, post_fix = "csv")
+... Parse.file_in_path(folder_path, post_fix = "csv")
 >>> ["./mosfet_IV_3.csv", ]
 
-... file_in_path(folder_path, post_fix = ["csv", "txt", "dat"])
+... Parse.file_in_path(folder_path, post_fix = ["csv", "txt", "dat"])
 ... #post_fix takes single string or list of string, does not support regex
 >>> ["./mosfet_IV_1.txt", "./mosfet_IV_2.txt", "./mosfet_IV_3.csv", "./mosfet_IV_4.dat"]
 
@@ -135,9 +142,9 @@ list_translate(data_list)
     	[  "0 mV",     "0 uA"],
     	["200 mV",   "800 uA"],
     	["400 mv",   "6.4 mA"],
-    				.
-    				.
-    				.
+    			.
+    			.
+    			.
     	[ "1.8 V", "583.2 mA"]
 	]
 
@@ -153,15 +160,41 @@ list_translate(data_list)
 
 
 
+##### Parse and combine multiple column from different csv:
+
 ```python
-multiple_csv(file_list, start_row = 0, columns = [], delimiters = "[,]+")
+... file_list = Parse.file_in_path(folder_path, post_fix = ["csv", "txt", "dat"])
+... print(file_list)
+>>> ["./mosfet_IV_1.txt", "./mosfet_IV_2.txt", "./mosfet_IV_3.csv", "./mosfet_IV_4.dat"]
+
+... Parse.multiple_csv(file_list, start_row = 2, columns = [2], delimiters = "[,]+")
+... #parses all column 2 from every file (with same dimension) and combine them into list
+>>> [
+
+    	["mosfet_IV_1", "mosfet_IV_2", ..., "mosfet_IV_4"]
+    	[    "current",     "current", ...,     "current"]
+    	[       "0 uA", 
+    	[     "800 uA", 
+    	[     "6.4 mA", 
+    		.
+    		.
+    		.
+    	[   "583.2 mA"                              ...  ]
+	]
+
+
 ```
 
 ------
 
 
 
+##### 2D Data grid output:
+
 ```
-print(data_list)
+
+Parse.print(data_list, show_index = True)
+
+
 ```
 
