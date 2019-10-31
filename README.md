@@ -24,47 +24,67 @@ unit(data_str, out_fmt = "%.3e", if_error = None)
 
 ##### parse csv or tab separated file :
 
-sample data: "./cpu_info.txt"
+sample data: "./mosfet_IV_1.txt"
 
-| index |   CPU    | Core | threads | Clock  |
-| :---: | :------: | :--: | :-----: | :----: |
-|   0   | i7-8086K |  6   |   12    | 4.0GHz |
-|   1   | i7-8700  |  6   |   12    | 3.2GHz |
-|   2   | i7-8700K |  6   |   12    | 3.7GHz |
-|   3   | i7-9700F |  8   |    8    | 3.0GHz |
-|   4   | i7-9700K |  8   |    8    | 3.6GHz |
+| description | mosfet_IV |          |            |
+| ----------: | :-------: | :------: | :--------: |
+|        time | 20191231  |          |            |
+|     program | IV_Curve  |          |            |
+|       index |  voltage  | Current  | Resistance |
+|           0 |   0 mV    |   0 uA   |    n/a     |
+|           1 |  200 mV   |  800 uA  | 250.0 pOhm |
+|           2 |  400 mV   |  6.4 mA  | 62.5 pOhm  |
+|           3 |  600 mV   | 21.6 mA  | 27.8 pOhm  |
+|           4 |  800 mV   | 51.2 mA  | 15.6 pOhm  |
+|           5 |   1.0 V   | 100.0 mA | 10.0 pOhm  |
+|           6 |   1.2 V   | 172.8 mA |  6.9 pOhm  |
+|           7 |   1.4 V   | 274.4 mA |  5.1 pOhm  |
+|           8 |   1.6 V   | 409.6 mA |  3.9 pOhm  |
+|           9 |   1.8 V   | 583.2 mA |  3.1 pOhm  |
 
 ```python
 csv(file_path, start_row = 0, columns = [], delimiters = "[,]+", translate = False)
 
 
-... file_name = "./cpu_info.txt"
-... Parse.csv(file_name, columns = [1, 3], delimiters = ["\t"]) 
+... file_name = "./mosfet_IV_1.txt"
+... Parse.csv(file_name, columns = [1, 2], delimiters = ["\t"]) 
+
 ... #columns is optional, leave it will parse all the data
-... #delimiter takes regex expression or python list, such as [" ", ",", ".", "abc"]
+... #delimiter takes regex expression or python list, such as [" ", ",", ".", ":"]
+... #as demonstrated, it fills out row 1~3 with empty columns at the rear end.
 >>> [
-    	[     "CPU", "threads"],
-    	["i7-8086K",      "12"],
-    	[ "i7-8700",      "12"],
-    	["i7-8700K",      "12"],
-    	["i7-9700F",       "8"],
-    	["i7-9700K",       "8"]
+    	["mosfet_IV",      ""],
+    	["20191231",       ""],
+    	["IV_Curve",       ""],
+    	["voltage", "current"],
+    	[  "0 mV",     "0 uA"],
+    	["200 mV",   "800 uA"],
+    	["400 mv",   "6.4 mA"],
+    				.
+    				.
+    				.
+    	[ "1.8 V", "583.2 mA"]
 	]
+
 
 ... Parse.csv(file_name, columns = [1, 3], delimiters = ["\t"], translate = True)
 >>> [
-    	[    "CPU", "i7-8086K", "i7-8700", "i7-8700K", "i7-9700F", "i7-9700K"], 
-    	["threads",       "12",      "12",       "12",        "8",        "8"]
+    	["mosfet_IV", "20191231", "IV_Curve", "voltage", "0 mV", ...    "1.8 V"], 
+    	[         "",         "",         "", "current", "0 uA", ... "583.2 mA"]
 	]
 
-... Parse.csv(file_name, start_row = 1, delimiters = ["\t"])
+
+... Parse.csv(file_name, start_row = 2, delimiters = ["\t"])
 ... #can use start_row to remove undesired headers
 >>> [
-    	["i7-8086K",      "12"],
-    	[ "i7-8700",      "12"],
-    	["i7-8700K",      "12"],
-    	["i7-9700F",       "8"],
-    	["i7-9700K",       "8"]
+    	["voltage", "current"],
+    	[  "0 mV",     "0 uA"],
+    	["200 mV",   "800 uA"],
+    	["400 mv",   "6.4 mA"],
+    				.
+    				.
+    				.
+    	[ "1.8 V", "583.2 mA"]
 	]
 ```
 
@@ -76,22 +96,24 @@ csv(file_path, start_row = 0, columns = [], delimiters = "[,]+", translate = Fal
 
 Sample file structure:
 
-- [ ] Current Folder
-  - [ ] cpu_info.txt
-  - [ ] gpu_info.dat
-  - [ ] power_supply_info.csv
-  - [ ] rgb_chassie_info.csv
+   [+]WAT_Folder
 
+​		├─mosfet_IV_1.txt
 
+​		├─mosfet_IV_2.txt
+
+​		├─mosfet_IV_3.csv
+
+​		├─mosfet_IV_4.dat
 
 ```python
 ... folder_path= "./"
 ... file_in_path(folder_path, post_fix = "csv")
->>> ["./power_supply_info.csv", "./rgb_chassie_info.csv"]
+>>> ["./mosfet_IV_3.csv", ]
 
 ... file_in_path(folder_path, post_fix = ["csv", "txt", "dat"])
 ... #post_fix takes single string or list of string, does not support regex
->>> ["./power_supply_info.csv", "./rgb_chassie_info.csv", "./cpu_info.txt", "./gpu_info.dat"]
+>>> ["./mosfet_IV_1.txt", "./mosfet_IV_2.txt", "./mosfet_IV_3.csv", "./mosfet_IV_4.dat"]
 
 ```
 
@@ -103,21 +125,27 @@ Sample file structure:
 
 ```python
 list_translate(data_list)
-... file_name = "./cpu_info.txt"
-... Parse.csv(file_name, columns = [1, 3], delimiters = ["\t"]) 
+... file_name = "./mosfet_IV_1.txt"
+... Parse.csv(file_name, columns = [1, 2], delimiters = ["\t"]) 
 >>> [
-    	[     "CPU", "threads"],
-    	["i7-8086K",      "12"],
-    	[ "i7-8700",      "12"],
-    	["i7-8700K",      "12"],
-    	["i7-9700F",       "8"],
-    	["i7-9700K",       "8"]
+    	["mosfet_IV",      ""],
+    	["20191231",       ""],
+    	["IV_Curve",       ""],
+    	["voltage", "current"],
+    	[  "0 mV",     "0 uA"],
+    	["200 mV",   "800 uA"],
+    	["400 mv",   "6.4 mA"],
+    				.
+    				.
+    				.
+    	[ "1.8 V", "583.2 mA"]
 	]
 
-... Parse.list_translate(Parse.csv(file_name, columns = [1, 3], delimiters = ["\t"]))
+
+... Parse.list_translate(Parse.csv(file_name, columns = [1, 2], delimiters = ["\t"]))
 >>> [
-    	[    "CPU", "i7-8086K", "i7-8700", "i7-8700K", "i7-9700F", "i7-9700K"], 
-    	["threads",       "12",      "12",       "12",        "8",        "8"]
+    	["mosfet_IV", "20191231", "IV_Curve", "voltage", "0 mV", ...    "1.8 V"], 
+    	[         "",         "",         "", "current", "0 uA", ... "583.2 mA"]
 	]
 ```
 
@@ -129,5 +157,11 @@ list_translate(data_list)
 multiple_csv(file_list, start_row = 0, columns = [], delimiters = "[,]+")
 ```
 
+------
 
+
+
+```
+print(data_list)
+```
 
