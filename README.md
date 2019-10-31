@@ -67,18 +67,18 @@ csv(file_path, start_row = 0, columns = [], delimiters = "[,]+", translate = Fal
     	[  "0 mV",     "0 uA"],
     	["200 mV",   "800 uA"],
     	["400 mv",   "6.4 mA"],
-    			.
-    			.
-    			.
+    		.
+    		.
+    		.
     	[ "1.8 V", "583.2 mA"]
-	]
+]
 
 
 ... Parse.csv(file_name, columns = [1, 2], delimiters = ["\t"], translate = True)
 >>> [
     	["mosfet_IV", "20191231", "IV_Curve", "voltage", "0 mV", ...    "1.8 V"], 
     	[         "",         "",         "", "current", "0 uA", ... "583.2 mA"]
-	]
+]
 
 
 ... Parse.csv(file_name, start_row = 2, delimiters = ["\t"])
@@ -88,11 +88,11 @@ csv(file_path, start_row = 0, columns = [], delimiters = "[,]+", translate = Fal
     	[  "0 mV",     "0 uA"],
     	["200 mV",   "800 uA"],
     	["400 mv",   "6.4 mA"],
-    			.
-    			.
-    			.
+    		.
+    		.
+    		.
     	[ "1.8 V", "583.2 mA"]
-	]
+]
 ```
 
 ------
@@ -146,14 +146,14 @@ list_translate(data_list)
     			.
     			.
     	[ "1.8 V", "583.2 mA"]
-	]
+]
 
 
 ... Parse.list_translate(Parse.csv(file_name, columns = [1, 2], delimiters = ["\t"]))
 >>> [
     	["mosfet_IV", "20191231", "IV_Curve", "voltage", "0 mV", ...    "1.8 V"], 
     	[         "",         "",         "", "current", "0 uA", ... "583.2 mA"]
-	]
+]
 ```
 
 ------
@@ -171,16 +171,16 @@ list_translate(data_list)
 ... #parses all column 2 from every file (with same dimension) and combine them into list
 >>> [
 
-    	["mosfet_IV_1", "mosfet_IV_2", ..., "mosfet_IV_4"]
-    	[    "current",     "current", ...,     "current"]
-    	[       "0 uA", 
-    	[     "800 uA", 
-    	[     "6.4 mA", 
+    	["mosfet_IV_1", "mosfet_IV_2", ..., "mosfet_IV_4"],
+    	[    "current",     "current", ...,     "current"],
+    	[       "0 uA",                ...,              ],
+    	[     "800 uA",                ...,              ],
+    	[     "6.4 mA",                ...,              ],
     		.
     		.
     		.
-    	[   "583.2 mA"                              ...  ]
-	]
+    	[   "583.2 mA"                              ...  ],
+]
 
 
 ```
