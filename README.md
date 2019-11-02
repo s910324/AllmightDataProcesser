@@ -11,7 +11,7 @@ unit(data_str, out_fmt = "%.3e", if_error = None)
 
 ... data_str = "12.34keV"
 ... Parse.unit(data_str)
->>> "1.234e4" #output will also remove postfix 'eV'
+>>> "1.234e4" #output will also remove suffix 'eV'
 
 ... data_str = "abc"
 ... Parse.unit(data_str)
@@ -115,11 +115,11 @@ Sample file structure:
 
 ```python
 ... folder_path= "./"
-... Parse.file_in_path(folder_path, post_fix = "csv")
+... Parse.file_in_path(folder_path, suffix = "csv")
 >>> ["./mosfet_IV_3.csv", ]
 
-... Parse.file_in_path(folder_path, post_fix = ["csv", "txt", "dat"])
-... #post_fix takes single string or list of string, does not support regex
+... Parse.file_in_path(folder_path, suffix = ["csv", "txt", "dat"])
+... #suffix can be single string or list of string, does not support regex
 >>> ["./mosfet_IV_1.txt", "./mosfet_IV_2.txt", "./mosfet_IV_3.csv", "./mosfet_IV_4.dat"]
 
 ```
@@ -142,9 +142,9 @@ list_translate(data_list)
     	[  "0 mV",     "0 uA"],
     	["200 mV",   "800 uA"],
     	["400 mv",   "6.4 mA"],
-    			.
-    			.
-    			.
+    		.
+    		.
+    		.
     	[ "1.8 V", "583.2 mA"]
 ]
 
@@ -163,12 +163,13 @@ list_translate(data_list)
 ##### Parse and combine multiple column from different csv:
 
 ```python
-... file_list = Parse.file_in_path(folder_path, post_fix = ["csv", "txt", "dat"])
+... file_list = Parse.file_in_path(folder_path, suffix = ["csv", "txt", "dat"])
 ... print(file_list)
 >>> ["./mosfet_IV_1.txt", "./mosfet_IV_2.txt", "./mosfet_IV_3.csv", "./mosfet_IV_4.dat"]
 
 ... Parse.multiple_csv(file_list, start_row = 2, columns = [2], delimiters = "[,]+")
 ... #parses all column 2 from every file (with same dimension) and combine them into list
+... #add file name at first row as header
 >>> [
 
     	["mosfet_IV_1", "mosfet_IV_2", ..., "mosfet_IV_4"],
@@ -191,9 +192,19 @@ list_translate(data_list)
 
 ##### 2D Data grid output:
 
-```
+```python
 
-Parse.print(data_list, show_index = True)
+... Parse.print(data_list, show_index = True, pretty = true, delimiter=", ")
+... # "pretty" adds blanks to aligh all column
+... # "show index" add additional column that labeled each row with index
+>>>  0,	  0 mV,		0 uA
+	 1,	200 mV,	  800 uA
+	 2,	400 mV,	  6.4 mA
+	 3,	600 mV,	 21.6 mA
+	 4,	800 mV,	 51.2 mA
+	 
+	 9,	 1.8 V,	583.2 mA
+	
 
 
 ```

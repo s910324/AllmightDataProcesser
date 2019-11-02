@@ -70,21 +70,21 @@ class Parse(object):
             column_counts = column_counts if column_counts else max([len(row_data) for row_data in data_list])
             return [ [ data_list[row][column] for row in range(len(data_list))] for column in range(column_counts)]
 
-    def file_in_path(folder_path, post_fix = "csv"):
+    def file_in_path(folder_path, suffix = "csv"):
         result = []
         if not os.path.isdir(folder_path):
             raise FileExistsError()
 
-        post_fix = (post_fix if isinstance(post_fix, (list, tuple, set)) else [post_fix])
-        groups = [ glob.glob( "%s/*.%s" % (folder_path, ext)) for ext in post_fix]
+        suffix = (suffix if isinstance(suffix, (list, tuple, set)) else [suffix])
+        groups = [ glob.glob( "%s/*.%s" % (folder_path, ext)) for ext in suffix]
         for group in groups :
             result += group
         return result
     
-    def print(data_list, show_index = True, pretty = True):
+    def print(data_list, show_index = True, pretty = True, delimiter = ", "):
         result       = []
         column_width = []
-
+        if pretty:
             for row, row_data in enumerate(data_list):
                 if not(column_width):
                     column_width = [0 for column in range(len(row_data))]
@@ -93,21 +93,27 @@ class Parse(object):
                     column_width[column] = len(column_data) if (column_width[column] < len(column_data)) else column_width[column] 
 
 
-        
-        index_rjust = len(str(len(data_list)))
-        for row, row_data in enumerate(data_list):
-            row_string = ", ".join([column_data.rjust(column_width[column])for column, column_data in enumerate(row_data)])
-            if show_index:
-                row_string = str(row).rjust(index_rjust) + ", " + row_string
-            result.append(row_string)
+            
+            index_rjust = len(str(len(data_list)))
+            for row, row_data in enumerate(data_list):
+                row_string = delimiter.join([column_data.rjust(column_width[column])for column, column_data in enumerate(row_data)])
+                if show_index:
+                    row_string = delimiter.join(str(row).rjust(index_rjust), row_string)
+                result.append(row_string)
+        else:
+            for row, row_data in enumerate(data_list):
+                row_string = delimiter.join([column_data for column, column_data in enumerate(row_data)])
+                if show_index:
+                    row_string = delimiter.join(str(row), row_string)
+                result.append(row_string)
 
         print ("\n".join(result))
 
 
 # file_name = "C:/Users/rawr/Downloads/MOCK_DATA.csv"
-file_list = Parse.file_in_path("C:/Users/rawr/Downloads/")
-result_a  = Parse.multiple_csv(file_list, 0, [3])
+# file_list = Parse.file_in_path("C:/Users/rawr/Downloads/")
+# result_a  = Parse.multiple_csv(file_list, 0, [3])
 # reslut_b  = Parse.csv(file_name, 0, [1,4])
 # Parse.print(Parse.list_translate(reslut_b))
-Parse.print(result_a, False)
+# Parse.print(result_a, False, False)
 # print(Parse.unit("a"))
