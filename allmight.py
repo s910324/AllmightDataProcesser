@@ -36,7 +36,7 @@ class Parse(object):
         with open(file_path) as file:
             for row, line in enumerate(file):
                 if row >= start_row:
-                    splited = re.split(split_regex, line.strip())
+                    splited = [ data.strip() for data in re.split(split_regex, line.strip())]
                     if columns:
                         result.append([ data for column, data in enumerate(splited) if column in columns])
                     else:
@@ -58,8 +58,13 @@ class Parse(object):
     def multiple_csv(file_list, start_row = 0, columns = [], delimiters = "[,]+"):
         result = []
         for file_path in file_list:
-            filename = re.split(r"[\\\/.]", file_path)[-2]
-            result += [ [filename] + column_data for column_data in Parse.csv(file_path, columns=columns, start_row=start_row, delimiters = delimiters, translate = True)]
+            filename = re.split(r"[\\ \/]", file_path)[-1]
+            result  += [ [filename] + column_data for column_data in Parse.csv(file_path, columns=columns, start_row=start_row, delimiters = delimiters, translate = True)]
+
+        max_row_count = max([ len(column_data) for column_data in result])
+        for column_data in result:
+            _ = [ column_data.append("") for delta_row in range(max_row_count - len(column_data))]
+
         return Parse._list_translate(result, column_counts= len(result[0]))
 
 
@@ -98,13 +103,13 @@ class Parse(object):
             for row, row_data in enumerate(data_list):
                 row_string = delimiter.join([column_data.rjust(column_width[column])for column, column_data in enumerate(row_data)])
                 if show_index:
-                    row_string = delimiter.join(str(row).rjust(index_rjust), row_string)
+                    row_string = delimiter.join([str(row).rjust(index_rjust), row_string])
                 result.append(row_string)
         else:
             for row, row_data in enumerate(data_list):
                 row_string = delimiter.join([column_data for column, column_data in enumerate(row_data)])
                 if show_index:
-                    row_string = delimiter.join(str(row), row_string)
+                    row_string = delimiter.join([str(row), row_string])
                 result.append(row_string)
 
         print ("\n".join(result))
@@ -116,4 +121,11 @@ class Parse(object):
 # reslut_b  = Parse.csv(file_name, 0, [1,4])
 # Parse.print(Parse.list_translate(reslut_b))
 # Parse.print(result_a, False, False)
-# print(Parse.unit("a"))
+# # print(Parse.unit("a"))
+
+# file_name = r"C:\Users\rawr\Desktop\rk\1NJF299.1_01_CP1.csv"
+# file_list = Parse.file_in_path(r"C:\Users\rawr\Desktop\rk")
+# result_a  = Parse.multiple_csv(file_list, 10, [2, 3, 4])
+# Parse.print(result_a)
+# reslut_b  = Parse.csv(file_name, 10, [2, 3, 4])
+# Parse.print(reslut_b)
