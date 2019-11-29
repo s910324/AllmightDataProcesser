@@ -121,21 +121,23 @@ class Parse(object):
         return format_into_string(args, kwargs)
 
 class File(object):
+    file_types = (("csv files","*.csv"),("txt files","*.txt"),("all files","*.*"))
 
-    def open_file():
+    def open_file_dialog():
         root = Tk()
         root.withdraw()
-        return filedialog.askopenfilename(initialdir = "/",title = "Select file", filetypes = (("csv files","*.csv"),("txt files","*.txt"),("all files","*.*")))
+        return filedialog.askopenfilename(initialdir = "/",title = "Select file", filetypes = File.file_types)
 
-    def open_path():
+    def open_path_dialog():
         root = Tk()
         root.withdraw()
-        return filedialog.askopenfilename(initialdir = "/",title = "Select file", filetypes = (("csv files","*.csv"),("txt files","*.txt"),("all files","*.*")))
+        return filedialog.askopenfilename(initialdir = "/",title = "Select folder", filetypes = File.file_types)
 
-    def save_file():
+    def save_file_dialog():
         root = Tk()
         root.withdraw()        
-        tkFileDialog.asksaveasfilename(initialdir = "/",title = "Select file",filetypes = (("jpeg files","*.jpg"),("all files","*.*")))
+        return tkFileDialog.asksaveasfilename(initialdir = "/",title = "Select file", filetypes = File.file_types)
+
 # file_name = "C:/Users/rawr/Downloads/MOCK_DATA.csv"
 # file_list = Parse.file_in_path("C:/Users/rawr/Downloads/")
 # result_a  = Parse.multiple_csv(file_list, 0, [3])
