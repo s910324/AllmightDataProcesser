@@ -86,7 +86,7 @@ class Parse(object):
             result += group
         return result
     
-    def print(data_list, show_index = True, pretty = True, delimiter = ", "):
+    def format_into_string(data_list, show_index = True, pretty = True, delimiter = ", "):
         result       = []
         column_width = []
         if pretty:
@@ -96,8 +96,6 @@ class Parse(object):
 
                 for column, column_data in enumerate(row_data):
                     column_width[column] = len(column_data) if (column_width[column] < len(column_data)) else column_width[column] 
-
-
             
             index_rjust = len(str(len(data_list)))
             for row, row_data in enumerate(data_list):
@@ -112,9 +110,32 @@ class Parse(object):
                     row_string = delimiter.join([str(row), row_string])
                 result.append(row_string)
 
-        print ("\n".join(result))
+        return ("\n".join(result))
 
+    def out(filename, *args, **kwargs): 
+        results = format_into_string(args, kwargs)
+        with open(filename, 'w+') as csvfile:
+            csvfile.write(results)
 
+    def print(*args, **kwargs):
+        return format_into_string(args, kwargs)
+
+class File(object):
+
+    def open_file():
+        root = Tk()
+        root.withdraw()
+        return filedialog.askopenfilename(initialdir = "/",title = "Select file", filetypes = (("csv files","*.csv"),("txt files","*.txt"),("all files","*.*")))
+
+    def open_path():
+        root = Tk()
+        root.withdraw()
+        return filedialog.askopenfilename(initialdir = "/",title = "Select file", filetypes = (("csv files","*.csv"),("txt files","*.txt"),("all files","*.*")))
+
+    def save_file():
+        root = Tk()
+        root.withdraw()        
+        tkFileDialog.asksaveasfilename(initialdir = "/",title = "Select file",filetypes = (("jpeg files","*.jpg"),("all files","*.*")))
 # file_name = "C:/Users/rawr/Downloads/MOCK_DATA.csv"
 # file_list = Parse.file_in_path("C:/Users/rawr/Downloads/")
 # result_a  = Parse.multiple_csv(file_list, 0, [3])
