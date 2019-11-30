@@ -2,6 +2,8 @@ import re
 import glob
 import os.path
 
+from tkinter import Tk, filedialog
+
 
 class Parse(object):
     derived_unit_dict = {
@@ -86,7 +88,7 @@ class Parse(object):
             result += group
         return result
     
-    def format_into_string(data_list, show_index = True, pretty = True, delimiter = ", "):
+    def _format_into_string(data_list, show_index = True, pretty = True, delimiter = ", "):
         result       = []
         column_width = []
         if pretty:
@@ -113,12 +115,34 @@ class Parse(object):
         return ("\n".join(result))
 
     def out(filename, *args, **kwargs): 
-        results = format_into_string(args, kwargs)
+        results = Parse._format_into_string(args, kwargs)
         with open(filename, 'w+') as csvfile:
             csvfile.write(results)
 
     def print(*args, **kwargs):
-        return format_into_string(args, kwargs)
+        return Parse._format_into_string(args, kwargs)
+
+
+class Statistic(object):
+    def frequency_chart(data_list, scale = []):
+        result = {}
+
+        if not scale:
+            scale = (min(data_list), max(data_list), 10)
+
+        start, stop, step = scale
+
+        _ = [ result.update( { (start + (step * segment)) : 0 } )  for segment in range(int((stop - start)/step))]
+        for data in data_list:
+            index = int((data-start)/step)
+            index = 0 if index < 0 else ( (len(result)-1) if index > (len(result)-1) else index)
+            result[index] += 1
+
+        return result
+
+
+
+
 
 class File(object):
     file_types = (("csv files","*.csv"),("txt files","*.txt"),("all files","*.*"))
@@ -137,6 +161,10 @@ class File(object):
         root = Tk()
         root.withdraw()        
         return tkFileDialog.asksaveasfilename(initialdir = "/",title = "Select file", filetypes = File.file_types)
+
+
+
+
 
 # file_name = "C:/Users/rawr/Downloads/MOCK_DATA.csv"
 # file_list = Parse.file_in_path("C:/Users/rawr/Downloads/")
