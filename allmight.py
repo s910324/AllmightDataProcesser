@@ -98,10 +98,10 @@ class Parse(object):
 
                 for column, column_data in enumerate(row_data):
                     column_width[column] = len(column_data) if (column_width[column] < len(column_data)) else column_width[column] 
-            
+
             index_rjust = len(str(len(data_list)))
             for row, row_data in enumerate(data_list):
-                row_string = delimiter.join([column_data.rjust(column_width[column])for column, column_data in enumerate(row_data)])
+                row_string = delimiter.join([column_data.rjust(column_width[column]) for column, column_data in enumerate(row_data)])
                 if show_index:
                     row_string = delimiter.join([str(row).rjust(index_rjust), row_string])
                 result.append(row_string)
@@ -114,16 +114,17 @@ class Parse(object):
 
         return ("\n".join(result))
 
-    def out(filename, *args, **kwargs): 
-        results = Parse._format_into_string(args, kwargs)
+    def out(filename, data_list, show_index = True, pretty = True, delimiter = ", "): 
+        results = Parse._format_into_string(data_list, show_index, pretty, delimiter)
         with open(filename, 'w+') as csvfile:
             csvfile.write(results)
 
-    def print(*args, **kwargs):
-        return Parse._format_into_string(args, kwargs)
+    def print(data_list, show_index = True, pretty = True, delimiter = ", "):
+        print( Parse._format_into_string(data_list, show_index, pretty, delimiter))
 
 
 class Statistic(object):
+
     def frequency_chart(data_list, scale = []):
         result = {}
 
@@ -174,9 +175,11 @@ class File(object):
 # Parse.print(result_a, False, False)
 # # print(Parse.unit("a"))
 
-# file_name = r"C:\Users\rawr\Desktop\rk\1NJF299.1_01_CP1.csv"
+# (?# file_name = r"C:\Users\rawr\Desktop\rk\1NJF299.1_01_CP1.csv")
 # file_list = Parse.file_in_path(r"C:\Users\rawr\Desktop\rk")
 # result_a  = Parse.multiple_csv(file_list, 10, [2, 3, 4])
 # Parse.print(result_a)
 # reslut_b  = Parse.csv(file_name, 10, [2, 3, 4])
 # Parse.print(reslut_b)
+file_name = File.open_file_dialog()
+Parse.print(Parse.csv(file_name))
