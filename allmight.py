@@ -97,17 +97,17 @@ class Parse(object):
                     column_width = [0 for column in range(len(row_data))]
 
                 for column, column_data in enumerate(row_data):
-                    column_width[column] = len(column_data) if (column_width[column] < len(column_data)) else column_width[column] 
+                    column_width[column] = len(str(column_data)) if (column_width[column] < len(str(column_data))) else column_width[column] 
 
             index_rjust = len(str(len(data_list)))
             for row, row_data in enumerate(data_list):
-                row_string = delimiter.join([column_data.rjust(column_width[column]) for column, column_data in enumerate(row_data)])
+                row_string = delimiter.join([str(column_data).rjust(column_width[column]) for column, column_data in enumerate(row_data)])
                 if show_index:
                     row_string = delimiter.join([str(row).rjust(index_rjust), row_string])
                 result.append(row_string)
         else:
             for row, row_data in enumerate(data_list):
-                row_string = delimiter.join([column_data for column, column_data in enumerate(row_data)])
+                row_string = delimiter.join([str(column_data) for column, column_data in enumerate(row_data)])
                 if show_index:
                     row_string = delimiter.join([str(row), row_string])
                 result.append(row_string)
@@ -129,10 +129,10 @@ class Statistic(object):
         result = {}
 
         if not scale:
-            scale = (min(data_list), max(data_list), 100)
+            scale = (min(data_list), max(data_list), (max(data_list)-min(data_list)/10))
 
-        start, stop, sections = scale
-        step                  = ( stop - start ) / sections
+        start, stop, step = scale
+        sections          = int(( stop - start ) / step)
 
         _ = [ result.update( { (start + (step * segment)) : 0 } )  for segment in range(sections)]
 
@@ -142,7 +142,8 @@ class Statistic(object):
             index = key[0]  if index < key[0] else ( key[-1] if index > key[-1] else index)
             result[index] += 1
 
-        return result
+        return [[key, value] for key, value in result.items()]
+        
 
 
 
@@ -187,4 +188,4 @@ class File(object):
 file_name ='C:/Users/rawr/Desktop/a.csv'# File.open_file_dialog()
 print (file_name)
 d_data = [float(*row_data) for row_data in Parse.csv(file_name)]
-print(Statistic.frequency_chart(d_data))
+Parse.print(Statistic.frequency_chart(d_data, [0, 200, 3]))
