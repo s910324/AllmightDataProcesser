@@ -125,13 +125,17 @@ class Parse(object):
 
 class Statistic(object):
     def __init__(self, data_list, parent=None):
-        self._data_list         = None
-        self._trimmed_data_list = None
-        self._average           = None
-        self._std               = None
-        self._trimmed_average   = None
-        self._trimmed_std       = None
-        self.data_list          = data_list
+        self._data_list          = None
+        self._trimmed_data_list  = None
+        self._spec_high          = None
+        self._spec_low           = None
+        self._uniformaty         = None
+        self._avg                = None
+        self._std                = None
+        self._trimmed_avg        = None
+        self._trimmed_std        = None
+        self._trimmed_uniformaty = None
+        self.data_list           = data_list
 
     @property
     def data_list(self):
@@ -140,24 +144,40 @@ class Statistic(object):
     @data_list.setter
     def data_list(self, data_list):
         self._data_list         = data_list
-        self._average           = statistics.mean(self._data_list)
+        self._avg               = statistics.mean(self._data_list)
         self._std               = statistics.stdev(self._data_list)
-        self._trimmed_data_list = list(filter(lambda x: (x >= self.average - (3 * self.std)) and ( x <= self.average + (3 * self.std)), self._data_list))
-        self._trimmed_average   = statistics.mean(self._trimmed_data_list)
+        self._trimmed_data_list = list(filter(lambda x: (x >= self.avg - (3 * self.std)) and ( x <= self.avg + (3 * self.std)), self._data_list))
+        self._trimmed_avg       = statistics.mean(self._trimmed_data_list)
         self._trimmed_std       = statistics.stdev(self._trimmed_data_list)
         self._outlier           = (len(self._data_list) - len(self._trimmed_data_list))
 
     @property
-    def average(self):
-        return self._average
+    def spec_high(self):
+        return self._spec_high
+
+    @spec_high.setter
+    def spec_high(self, spec_high):
+        self._spec_high = spec_high
+
+    @property
+    def spec_low(self):
+        return self._spec_low
+
+    @spec_low.setter
+    def spec_low(self, spec_low):
+        self._spec_low = spec_low
+
+    @property
+    def avg(self):
+        return self._avg
 
     @property
     def std(self):
         return self._std
 
     @property
-    def trimmed_average(self):
-        return self._trimmed_average
+    def trimmed_avg(self):
+        return self._trimmed_avg
 
     @property
     def trimmed_std(self):
@@ -167,7 +187,18 @@ class Statistic(object):
     def outlier(self):
         return self._outlier
 
+    @property
+    def in_spec_avg(self):
+        return self._in_spec_avg
 
+    @property
+    def in_spec_std(self):
+        return self._in_spec_stg
+
+    def out_of_spec(self):
+        return self._out_of_spec
+        
+    @property
     def frequency_chart(scale = []):
         result    = {}
         data_list = self._data_list
@@ -192,13 +223,13 @@ class Statistic(object):
 
     def __str__(self):
         return """
-             +3: %f
-        average: %f
-             -3: %f
-            std: %f
-        outlier: %d pts
-trimmed_average: %f
-    trimmed_std: %f""" % ((self.average + (3*self.std)), self.average, (self.average - (3*self.std)), self.std, self.outlier, self.trimmed_average, self.trimmed_std)
+         +3: %f
+        avg: %f
+         -3: %f
+        std: %f
+    outlier: %d pts
+trimmed_avg: %f
+trimmed_std: %f""" % ((self.avg + (3*self.std)), self.avg, (self.avg - (3*self.std)), self.std, self.outlier, self.trimmed_avg, self.trimmed_std)
 
         
 
