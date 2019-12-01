@@ -1,8 +1,10 @@
 # All might 2d data processer
 
+- package dependency: non, for scenario that your machine only got bare bone python.
+
+  
+
 #### Parse module static methods:
-
-
 
 ##### unit conversion:
 
