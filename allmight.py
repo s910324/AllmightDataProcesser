@@ -114,13 +114,13 @@ class Parse(object):
 
         return ("\n".join(result))
 
-    def out(filename, data_list, show_index = True, pretty = True, delimiter = ", "): 
-        results = Parse._format_into_string(data_list, show_index, pretty, delimiter)
+    def out(filename, *args, **kwargs): 
+        results = Parse._format_into_string(*args, **kwargs)
         with open(filename, 'w+') as csvfile:
             csvfile.write(results)
 
-    def print(data_list, show_index = True, pretty = True, delimiter = ", "):
-        print( Parse._format_into_string(data_list, show_index, pretty, delimiter))
+    def print(*args, **kwargs):
+        print( Parse._format_into_string(*args, **kwargs))
 
 
 class Statistic(object):
@@ -129,14 +129,17 @@ class Statistic(object):
         result = {}
 
         if not scale:
-            scale = (min(data_list), max(data_list), 10)
+            scale = (min(data_list), max(data_list), 100)
 
-        start, stop, step = scale
+        start, stop, sections = scale
+        step                  = ( stop - start ) / sections
 
-        _ = [ result.update( { (start + (step * segment)) : 0 } )  for segment in range(int((stop - start)/step))]
+        _ = [ result.update( { (start + (step * segment)) : 0 } )  for segment in range(sections)]
+
         for data in data_list:
-            index = int((data-start)/step)
-            index = 0 if index < 0 else ( (len(result)-1) if index > (len(result)-1) else index)
+            index = start + (step * int((data-start)/step))
+            key   = list(result.keys())
+            index = key[0]  if index < key[0] else ( key[-1] if index > key[-1] else index)
             result[index] += 1
 
         return result
@@ -181,5 +184,7 @@ class File(object):
 # Parse.print(result_a)
 # reslut_b  = Parse.csv(file_name, 10, [2, 3, 4])
 # Parse.print(reslut_b)
-file_name = File.open_file_dialog()
-Parse.print(Parse.csv(file_name))
+file_name ='C:/Users/rawr/Desktop/a.csv'# File.open_file_dialog()
+print (file_name)
+d_data = [float(*row_data) for row_data in Parse.csv(file_name)]
+print(Statistic.frequency_chart(d_data))
