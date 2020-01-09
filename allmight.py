@@ -3,7 +3,7 @@ import glob
 import os.path
 import statistics
 from  tkinter import Tk, filedialog
-import timeit
+
 
 class Parse(object):
     derived_unit_dict = {
@@ -124,22 +124,19 @@ class Parse(object):
 
 
 class Statistic(object):
-    def __init__(self, data_list, title, parent=None):
-        self._data_list          = None
-        self._trimmed_data_list  = None
-        self._in_spec_data_list  = None
-        self._spec_high          = None
-        self._spec_low           = None
-        self._out_of_spec        = None
-        self._uniformaty         = None
-        self._avg                = None
-        self._std                = None
-        self._trimmed_avg        = None
-        self._trimmed_std        = None
-        self._trimmed_uniformaty = None
-        self._outlier            = None
-        self._title              = title
-        self.data_list           = data_list
+    def __init__(self, data, spec_high=None, spec_low=None, title=None, parent=None):
+
+        self._data       = None
+        self._uniformaty = None
+        self._avg        = None
+        self._std        = None
+        self._uniformaty = None
+        self._outlier    = None
+        self._parent     = parent
+        self._spec_high  = spec_high
+        self._spec_low   = spec_low
+        self._title      = title
+        self.data        = data
 
 
     def _isnumeric(data):
@@ -152,6 +149,14 @@ class Statistic(object):
             return False
 
     @property
+    def in_spec_data(self):
+        return Statistic(list(filter(lambda x: (True if (self.spec_high==None) else (x<=self.spec_high)) and (True if (self.spec_low==None) else (x>=self.spec_low)), self._data)), parent = self)
+
+    @property
+    def trimmed_data(self):
+        return Statistic(list(filter(lambda x: ( x <= self.avg + (3*self.std) ) and  x >= self.avg - (3*self.std) ), self._data), parent = self)
+
+    @property
     def title(self):
         return self._title
 
@@ -160,18 +165,49 @@ class Statistic(object):
         self._title = title
 
     @property
-    def data_list(self):
-        return self._data_list
+    def data(self):
+        return self._data
 
-    @data_list.setter
-    def data_list(self, data_list):
-        self._data_list         = list(filter(lambda x: (Statistic._isnumeric(x)), data_list))
+    @data.setter
+    def data(self, data_list):
+        self._data             = data_list if type(self._parent) == Statistic else [float(data) for data in data_list if (Statistic._isnumeric(data))]
+        self._parent           = None
+        self._avg_not_updated  = True
+        self._std_not_updated  = True
+        self._max_not_updated  = True
+        self._min_not_updated  = True
 
-    def _gen_trim_data_list(self):
-        self._trimmed_data_list = list(filter(lambda x: (x >= self.avg - (3 * self.std)) and ( x <= self.avg + (3 * self.std)), self._data_list))
-    
-    def _gen_in_spec_data_list(self):
-        self._in_spec_data_list = list(filter(lambda x: x >= spec_high, self_data_list))        
+    @property
+    def avg(self):
+        if (self._avg_not_updated):
+            self._avg = statistics.mean(self._data)  if len(self) > 0 else None
+            self._avg_not_updated  = False
+        return self._avg
+
+    @property
+    def std(self):
+        if (self._std_not_updated):
+            self._std = statistics.stdev(self._data) if len(self) > 0 else None
+            self._std_not_updated  = False
+        return self._std
+
+    @property
+    def max(self):
+        if (self._max_not_updated):
+            self._max = max(self._data) if len(self) > 0 else None
+            self._max_not_updated  = False
+        return self._max
+
+    @property
+    def min(self):
+        if (self._min_not_updated):
+            self._min = min(self._data) if len(self) > 0 else None
+            self._min_not_updated  = False
+        return self._min
+
+    @property
+    def uniformaty(self):
+        return (self.max-self.min)/(2*self.avg)
 
     @property
     def spec_high(self):
@@ -191,64 +227,13 @@ class Statistic(object):
         self._spec_low = spec_low
         self._gen_in_spec_data_list()
 
-    @property
-    def in_spec_data_list(self):
-        return self._in_spec_data_list
 
-    @property
-    def in_spec_avg(self):
-        return self.statistics.mean(self.in_spec_data_list)  if len(self.in_spec_data_list) > 0 else None
-
-    @property
-    def in_spec_std(self):
-        return self.statistics.stdev(self.in_spec_data_list) if len(self.in_spec_data_list) > 0 else None
-
-    @property
-    def out_of_spec(self):
-        if (self._in_spec_data_list==None):
-            self._gen_in_spec_data_list()
-        self._out_of_spec = (len(self._data_list) - len(self._in_spec_data_list))
-        return self._out_of_spec
-
-
-    @property
-    def avg(self):
-        self._avg = statistics.mean(self._data_list)  if len(self) > 0 else None
-        return self._avg
-
-    @property
-    def std(self):
-        self._std = statistics.stdev(self._data_list) if len(self) > 0 else None
-        return self._std
-
-    @property
-    def trimmed_avg(self):
-        if (self._trimmed_data_list==None):
-            self._gen_trim_data_list()
-        self._trimmed_avg = statistics.mean(self._trimmed_data_list) if len(this._trimmed_data_list) > 0 else None
-        return self._trimmed_avg
-
-    @property
-    def trimmed_std(self):
-        if (self._trimmed_data_list==None):
-             self._gen_trim_data_list()
-        self._trimmed_std = statistics.stdev(self._trimmed_data_list) if len(this._trimmed_data_list) > 0 else None
-        return self._trimmed_std
-
-    @property
-    def outlier(self):
-        if (self._trimmed_data_list==None):
-             self._gen_trim_data_list()
-        self._outlier = (len(self._data_list) - len(self._trimmed_data_list))
-        return self._outlier
-        
-    @property
-    def frequency_chart(scale = []):
+    def frequency_chart(self, scale = []):
         result    = {}
-        data_list = self._data_list
+        data_list = self._data
         
         if not scale:
-            scale = (min(data_list), max(data_list), (max(data_list)-min(data_list)/10))
+            scale = (min(data_list), max(data_list), (max(data_list)-min(data_list))/10)
 
         start, stop, step = scale
         sections          = int(( stop - start ) / step)
@@ -262,32 +247,21 @@ class Statistic(object):
             result[index] += 1
 
         return [[key, value] for key, value in result.items()]
-        
+
     def __len__(self):
-        return len(self._data_list)
+        return len(self._data)
 
     def __str__(self):
-        return """
-      title: %s
-         +3: %f
-        avg: %f
-         -3: %f
-        std: %f
-    outlier: %d pts
-trimmed_avg: %f
-trimmed_std: %f
-  spec_high: %f
-   spec_low: %f
-in_spec_avg: %f
-in_spec_std: %f
-""" % (self.title, (self.avg + (3*self.std)), self.avg, (self.avg - (3*self.std)), self.std, self.outlier, self.trimmed_avg, self.trimmed_std, self.spec_high, self.spec_low, self.in_spec_avg, self.in_spec_std)
-
-
-        
-
-
-
-
+        return u"""
+title: %s
+ +3s : %s
+ avg : %s
+ -3s : %s
+ std : %s
+  U%% : %s
+ USL : %s
+ LSL : %s
+""" % (self.title, (self.avg + (3*self.std)), self.avg, (self.avg - (3*self.std)), self.std, self.uniformaty, self.spec_high, self.spec_low)
 
 
 class File(object):
@@ -310,39 +284,33 @@ class File(object):
 
 
 
-
-
-file_name = "C:/Users/rawr/Downloads/MOCK_DATA.csv"
-# file_list = Parse.file_in_path("C:/Users/rawr/Downloads/")
-# result_a  = Parse.multiple_csv(file_list, 0, [3])
-reslut_b  = [data[0] for data in Parse.csv(file_name, 0, [6])]
-# Parse.print(Parse.list_translate(reslut_b))
-# Parse.print(result_a, False, False)
-# # print(Parse.unit("a"))
-
-# (?# file_name = r"C:\Users\rawr\Desktop\rk\1NJF299.1_01_CP1.csv")
-# file_list = Parse.file_in_path(r"C:\Users\rawr\Desktop\rk")
-# result_a  = Parse.multiple_csv(file_list, 10, [2, 3, 4])
-# Parse.print(result_a)
-# reslut_b  = Parse.csv(file_name, 10, [2, 3, 4])
-# Parse.print(reslut_b)
-# file_name ='C:/Users/rawr/Desktop/a.csv'# File.open_file_dialog()
-# print (file_name)
-# d_data = [float(*row_data) for row_data in Parse.csv(file_name)]
-# s = Statistic(d_data)
-
-# print (s)
-# print(reslut_b)
-
 if __name__ == '__main__':
-    import timeit
-    def k():
-        m=[ float(data) for data in reslut_b if Statistic._isnumeric(data) ]
 
-    def q():
-        m=list(filter(lambda x: (Statistic._isnumeric(x)), reslut_b))
+    file_name = "C:/Users/rawr/Downloads/MOCK_DATA.csv"
+    # file_list = Parse.file_in_path("C:/Users/rawr/Downloads/")
+    # result_a  = Parse.multiple_csv(file_list, 0, [3])
+    reslut_b  = [data[0] for data in Parse.csv(file_name, 0, [6])]
+    # Parse.print(Parse.list_translate(reslut_b))
+    # Parse.print(result_a, False, False)
+    # # print(Parse.unit("a"))
 
+    # (?# file_name = r"C:\Users\rawr\Desktop\rk\1NJF299.1_01_CP1.csv")
+    # file_list = Parse.file_in_path(r"C:\Users\rawr\Desktop\rk")
+    # result_a  = Parse.multiple_csv(file_list, 10, [2, 3, 4])
+    # Parse.print(result_a)
+    # reslut_b  = Parse.csv(file_name, 10, [2, 3, 4])
+    # Parse.print(reslut_b)
+    # file_name ='C:/Users/rawr/Desktop/a.csv'# File.open_file_dialog()
+    # print (file_name)
+    # d_data = [float(*row_data) for row_data in Parse.csv(file_name)]
+    # s = Statistic(d_data)
 
-    print(timeit.timeit(stmt='k()', number=5000, setup="from __main__ import k"))
-    print(timeit.timeit(stmt='q()', number=5000, setup="from __main__ import q"))
-# print(m)
+    # print (s)
+    # print(reslut_b)
+    a =Statistic(reslut_b, spec_high = 20, spec_low=10)
+
+    b = a.in_spec_data
+
+    print(a)
+    print(b)
+
