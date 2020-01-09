@@ -2,11 +2,13 @@
 
 - package dependency: non, for scenario that your machine only got bare bone python.
 
+  [TOC]
+  
   
 
-#### Parse module static methods:
+## ◆ Parse module static methods:
 
-##### unit conversion:
+### ◎ unit conversion:
 
 ```python
 unit(data_str, out_fmt = "%.3e", if_error = None)
@@ -31,7 +33,7 @@ unit(data_str, out_fmt = "%.3e", if_error = None)
 
 
 
-##### parse csv or tab separated file :
+### ◎ parse csv or tab separated file :
 
 sample data: "./mosfet_IV_1.txt"
 
@@ -69,9 +71,7 @@ csv(file_path, start_row = 0, columns = [], delimiters = "[,]+", translate = Fal
     	[  "0 mV",     "0 uA"],
     	["200 mV",   "800 uA"],
     	["400 mv",   "6.4 mA"],
-    		.
-    		.
-    		.
+                 ⋮
     	[ "1.8 V", "583.2 mA"]
 ]
 
@@ -90,9 +90,7 @@ csv(file_path, start_row = 0, columns = [], delimiters = "[,]+", translate = Fal
     	[  "0 mV",     "0 uA"],
     	["200 mV",   "800 uA"],
     	["400 mv",   "6.4 mA"],
-    		.
-    		.
-    		.
+                 ⋮
     	[ "1.8 V", "583.2 mA"]
 ]
 ```
@@ -101,7 +99,7 @@ csv(file_path, start_row = 0, columns = [], delimiters = "[,]+", translate = Fal
 
 
 
-##### Search files in folder:
+### ◎ Search files in folder:
 
 Sample file structure:
 
@@ -130,7 +128,7 @@ Sample file structure:
 
 
 
-##### 2D list translation:
+### ◎ 2D list translation:
 
 ```python
 list_translate(data_list)
@@ -144,9 +142,7 @@ list_translate(data_list)
     	[  "0 mV",     "0 uA"],
     	["200 mV",   "800 uA"],
     	["400 mv",   "6.4 mA"],
-    		.
-    		.
-    		.
+                  ⋮
     	[ "1.8 V", "583.2 mA"]
 ]
 
@@ -162,7 +158,7 @@ list_translate(data_list)
 
 
 
-##### Parse and combine multiple column from different csv:
+### ◎ Parse and combine multiple column from different csv:
 
 ```python
 ... file_list = Parse.file_in_path(folder_path, suffix = ["csv", "txt", "dat"])
@@ -179,9 +175,7 @@ list_translate(data_list)
     	[       "0 uA",                ...,              ],
     	[     "800 uA",                ...,              ],
     	[     "6.4 mA",                ...,              ],
-    		.
-    		.
-    		.
+                              ⋮
     	[   "583.2 mA"                              ...  ],
 ]
 
@@ -192,7 +186,7 @@ list_translate(data_list)
 
 
 
-##### 2D Data grid output:
+### ◎ 2D Data grid output:
 
 ```python
 
@@ -200,14 +194,61 @@ list_translate(data_list)
 ... # "pretty" adds blanks to aligh all column
 ... # "show index" add additional column that labeled each row with index
 >>>  0,	  0 mV,		0 uA
-	 1,	200 mV,	  800 uA
-	 2,	400 mV,	  6.4 mA
-	 3,	600 mV,	 21.6 mA
-	 4,	800 mV,	 51.2 mA
-	 
-	 9,	 1.8 V,	583.2 mA
+    1,	200 mV,	  800 uA
+    2,	400 mV,	  6.4 mA
+    3,	600 mV,	 21.6 mA
+    4,	800 mV,	 51.2 mA
+          ⋮
+    9,	 1.8 V,	583.2 mA
 	
 
+
+```
+
+------
+
+
+
+## ◆ Statistic module :
+
+### ◎ input data and basic function:
+
+```python
+... # only support 1D data, can parse throuth dirty data, any numeric like element
+... # will be treated as number and any un-parsable will be excluded.
+... data = [39.082, 6.908, 14.54, 17.134, 22.95, ... , 9.552, 24.05]
+
+
+... # print function shows pre-set statistical values 
+... stat = Statistic(data, title = "random data")
+... print(stat)
+>>> title: random data
+     +3s : 23.508354109740537
+     avg : 15.154301158301159
+     -3s : 6.800248206861781
+     std : 2.7846843171464597
+      U% : 0.32776173233690803
+     USL : None
+     LSL : None
+        
+        
+... # aquire statistical data by attributes
+... print(len(stat), stat.avg, stat.std)
+>>> 30, 15.154301158301159, 2.7846843171464597 
+
+
+... print(stat.max, stat.min, stat.uniformaty, stat.spec_h, stat.spec_l)
+>>> 19.962, 10.028, 0.32776173233690803, None, None        
+
+```
+
+------
+
+
+
+### ◎ filtering data using 'spec' attribute:
+
+```python
 
 ```
 

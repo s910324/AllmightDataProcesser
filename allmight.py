@@ -312,5 +312,6 @@ if __name__ == '__main__':
     b = a.in_spec_data
 
     print(a)
-    print(b)
+    print(b.max)
+    print(b.min)
 
