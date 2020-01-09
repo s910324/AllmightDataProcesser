@@ -207,7 +207,8 @@ class Statistic(object):
 
     @property
     def uniformaty(self):
-        return (self.max-self.min)/(2*self.avg)
+
+        return (self.max-self.min)/(2*self.avg) if not( None in [self.avg, self.max, self.min]) else None
 
     @property
     def spec_high(self):
@@ -248,20 +249,54 @@ class Statistic(object):
 
         return [[key, value] for key, value in result.items()]
 
+    @property
+    def len(self):
+        return len(self._data)
+
+    def __getitem__(self, index):
+        if type(index) == int:
+            if index < len(self):
+                return self.data[index]
+            else:
+                raise IndexError("data access with index %d out of range" % index)
+        else:
+            raise TypeError("data access with unsupported type %s " % type(index))
+
+
+    # def __add__(self, another):
+    #     if type(another) == Statistic:
+    #         return Statistic(self.data + another.data, parent = self)
+    #     else if type(another) in [int, float]:
+    #         pass
+    #     else:
+    #         raise TypeError("add operation on %s to %s is not supported" % (type(self), type(another)))
+
+    # def __and__(self, another):
+    #     if type(another) == Statistic:
+    #         return Statistic(self.data + another.data, parent = self)
+    #     else:
+    #         raise TypeError("add operation on %s to %s is not supported" % (type(self), type(another)))
+
     def __len__(self):
         return len(self._data)
 
     def __str__(self):
+        std_p3s = None if None in [self.avg, self.std] else (self.avg + (3*self.std))
+        std_m3s = None if None in [self.avg, self.std] else (self.avg - (3*self.std))
+
         return u"""
 title: %s
  +3s : %s
  avg : %s
  -3s : %s
  std : %s
+ max : %s
+ min : %s
   U%% : %s
  USL : %s
  LSL : %s
-""" % (self.title, (self.avg + (3*self.std)), self.avg, (self.avg - (3*self.std)), self.std, self.uniformaty, self.spec_high, self.spec_low)
+ len : %s
+""" % (self.title, std_p3s, self.avg, std_m3s, self.std, self.max, self.min, self.uniformaty, self.spec_high, self.spec_low, self.len)
 
 
 class File(object):
@@ -307,11 +342,12 @@ if __name__ == '__main__':
 
     # print (s)
     # print(reslut_b)
-    a =Statistic(reslut_b, spec_high = 20, spec_low=10)
+    a =Statistic([])
 
-    b = a.in_spec_data
+    b = a.data = reslut_b
 
     print(a)
-    print(b.max)
-    print(b.min)
+    print(a.max)
+    print(a.min)
+    print(a.len)
 

@@ -216,6 +216,7 @@ list_translate(data_list)
 ```python
 ... # only support 1D data, can parse throuth dirty data, any numeric like element
 ... # will be treated as number and any un-parsable will be excluded.
+... # here's array with 1000 random data ranging from 0-50
 ... data = [39.082, 6.908, 14.54, 17.134, 22.95, ... , 9.552, 24.05]
 
 
@@ -223,22 +224,24 @@ list_translate(data_list)
 ... stat = Statistic(data, title = "random data")
 ... print(stat)
 >>> title: random data
-     +3s : 23.508354109740537
-     avg : 15.154301158301159
-     -3s : 6.800248206861781
-     std : 2.7846843171464597
-      U% : 0.32776173233690803
-     USL : None
-     LSL : None
+     +3s : 54.924033640223165   # average +3 standard deviation
+     avg : 19.630434
+     -3s : -15.663165640223163  # average -3 standard deviation
+     std : 11.76453321340772
+     max : 39.964
+     min : 0.012
+      U% : 1.0176035843119922   # U% (max-min)/(2avg) use in semiconductor industry
+     USL : None                 # Upper spec limit
+     LSL : None                 # Lower spec limit
+     len : 1000                 # data counts
         
         
-... # aquire statistical data by attributes
+... # can also access statistical data by attributes
 ... print(len(stat), stat.avg, stat.std)
->>> 30, 15.154301158301159, 2.7846843171464597 
-
+>>> 1000, 19.630434, 11.76453321340772 
 
 ... print(stat.max, stat.min, stat.uniformaty, stat.spec_h, stat.spec_l)
->>> 19.962, 10.028, 0.32776173233690803, None, None        
+>>> 39.964, 0.012,  1.0176035843119922, None, None        
 
 ```
 
@@ -246,9 +249,30 @@ list_translate(data_list)
 
 
 
+### ◎ set data and retrieve parsed data
+
+```python
+... # can declear empty object that holdes nothing and set data later at your desire
+... # data can be retrieved or be setted using .data attribute
+... stat      = Statistic([])
+... data      = [39.082, 6.908, 14.54, 17.134, 22.95, ... , 9.552, 24.05]
+... stat.data = data
+... print(stat.average)
+>>> 19.630434
+
+add / substract / and / or / xor / getitem
+
+```
+
+
+
+
+
+
+
 ### ◎ filtering data using 'spec' attribute:
 
 ```python
-
+... stat = Statistic(data, title = "random data", spec_h = 20, spec_L)
 ```
 
