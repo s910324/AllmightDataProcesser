@@ -3,11 +3,10 @@
 - package dependency: non, for scenario that your machine only got bare bone python.
 
 
-
 - [All might 2d data processer](#all-might-2d-data-processer)
   * [Parse module static methods](#parse-module-static-methods)
     + [unit conversion](#unit-conversion)
-    + [Parse csv or tab separated file :](#parse-csv-or-tab-separated-file--)
+    + [Parse csv or tab separated file](#parse-csv-or-tab-separated-file)
     + [Search files in folder](#search-files-in-folder)
     + [2D list translation](#2d-list-translation)
     + [Parse and combine multiple column from different csv](#parse-and-combine-multiple-column-from-different-csv)
@@ -15,7 +14,7 @@
   * [Statistic module](#statistic-module)
     + [Basic function](#basic-function)
     + [Set and retrieve parsed data](#set-and-retrieve-parsed-data)
-    + [Filtering using 'spec' attribute](#filtering-using--spec--attribute)
+    + [Filtering using spec attribute](#filtering-using-spec-attribute)
   
 
 
@@ -49,7 +48,7 @@ unit(data_str, out_fmt = "%.3e", if_error = None)
 
 
 
-### Parse csv or tab separated file :
+### Parse csv or tab separated file
 
 sample data: "./mosfet_IV_1.txt"
 
@@ -286,7 +285,7 @@ add / substract / and / or / xor / getitem
 
 
 
-### Filtering using 'spec' attribute
+### Filtering using spec attribute
 
 ```python
 ... stat = Statistic(data, title = "random data", spec_h = 20, spec_L)
