@@ -2,13 +2,29 @@
 
 - package dependency: non, for scenario that your machine only got bare bone python.
 
-  [TOC]
-  
+
+
+- [All might 2d data processer](#all-might-2d-data-processer)
+  * [Parse module static methods:](#parse-module-static-methods-)
+    + [unit conversion:](#unit-conversion-)
+    + [parse csv or tab separated file :](#parse-csv-or-tab-separated-file--)
+    + [Search files in folder:](#search-files-in-folder-)
+    + [2D list translation:](#2d-list-translation-)
+    + [Parse and combine multiple column from different csv:](#parse-and-combine-multiple-column-from-different-csv-)
+    + [2D Data grid output:](#2d-data-grid-output-)
+  * [Statistic module :](#statistic-module--)
+    + [input data and basic function:](#input-data-and-basic-function-)
+    + [set data and retrieve parsed data](#set-data-and-retrieve-parsed-data)
+    + [filtering data using 'spec' attribute:](#filtering-data-using--spec--attribute-)
   
 
-## ◆ Parse module static methods:
 
-### ◎ unit conversion:
+
+
+
+## Parse module static methods:
+
+### unit conversion:
 
 ```python
 unit(data_str, out_fmt = "%.3e", if_error = None)
@@ -33,7 +49,7 @@ unit(data_str, out_fmt = "%.3e", if_error = None)
 
 
 
-### ◎ parse csv or tab separated file :
+### parse csv or tab separated file :
 
 sample data: "./mosfet_IV_1.txt"
 
@@ -99,7 +115,7 @@ csv(file_path, start_row = 0, columns = [], delimiters = "[,]+", translate = Fal
 
 
 
-### ◎ Search files in folder:
+### Search files in folder:
 
 Sample file structure:
 
@@ -128,7 +144,7 @@ Sample file structure:
 
 
 
-### ◎ 2D list translation:
+### 2D list translation:
 
 ```python
 list_translate(data_list)
@@ -158,7 +174,7 @@ list_translate(data_list)
 
 
 
-### ◎ Parse and combine multiple column from different csv:
+### Parse and combine multiple column from different csv:
 
 ```python
 ... file_list = Parse.file_in_path(folder_path, suffix = ["csv", "txt", "dat"])
@@ -186,7 +202,7 @@ list_translate(data_list)
 
 
 
-### ◎ 2D Data grid output:
+### 2D Data grid output:
 
 ```python
 
@@ -209,9 +225,9 @@ list_translate(data_list)
 
 
 
-## ◆ Statistic module :
+## Statistic module :
 
-### ◎ input data and basic function:
+### input data and basic function:
 
 ```python
 ... # only support 1D data, can parse throuth dirty data, any numeric like element
@@ -249,7 +265,7 @@ list_translate(data_list)
 
 
 
-### ◎ set data and retrieve parsed data
+### set data and retrieve parsed data
 
 ```python
 ... # can declear empty object that holdes nothing and set data later at your desire
@@ -270,7 +286,7 @@ add / substract / and / or / xor / getitem
 
 
 
-### ◎ filtering data using 'spec' attribute:
+### filtering data using 'spec' attribute:
 
 ```python
 ... stat = Statistic(data, title = "random data", spec_h = 20, spec_L)
