@@ -276,32 +276,44 @@ class Statistic(object):
                 # print(self.data, another.data if (self.len >= another.len) else another.data, self.data)
                 host_data, client_data = (self.data, another.data) if (self.len >= another.len) else (another.data, self.data)
                 if (operator == "add"):
-                    host_data = [data + client_data[i] if i < len(client_data) else data for i, data in enumerate(host_data) ]
+                    host_data = [data +  client_data[i] if i < len(client_data) else data for i, data in enumerate(host_data) ]
                         
                 elif (operator == "sub"):
-                    host_data = [data - client_data[i] if i < len(client_data) else data for i, data in enumerate(host_data) ]
+                    host_data = [data -  client_data[i] if i < len(client_data) else data for i, data in enumerate(host_data) ]
 
                 elif (operator == "mul"):
-                    host_data = [data * client_data[i] if i < len(client_data) else data for i, data in enumerate(host_data) ]      
+                    host_data = [data *  client_data[i] if i < len(client_data) else data for i, data in enumerate(host_data) ]      
 
                 elif (operator == "div"):
-                    host_data = [data / client_data[i] if i < len(client_data) else data for i, data in enumerate(host_data) ]
+                    host_data = [data /  client_data[i] if i < len(client_data) else data for i, data in enumerate(host_data) ]
+
+                elif (operator == "mod"):
+                    host_data = [data %  client_data[i] if i < len(client_data) else data for i, data in enumerate(host_data) ]
+
+                elif (operator == "pow"):
+                    host_data = [data ** client_data[i] if i < len(client_data) else data for i, data in enumerate(host_data) ]
 
                 return Statistic(host_data, parent = self)
 
             elif (type(another) in [int, float]):
 
                 if (operator == "add"):
-                    self.data = [data + another for data in self.data]
+                    self.data = [data +  another for data in self.data]
 
                 elif (operator == "sub"):
-                    self.data = [data - another for data in self.data]
+                    self.data = [data -  another for data in self.data]
 
                 elif (operator == "mul"):
-                    self.data = [data * another for data in self.data]
+                    self.data = [data *  another for data in self.data]
 
                 elif (operator == "div"):
-                    self.data = [data / another for data in self.data]
+                    self.data = [data /  another for data in self.data]
+
+                elif (operator == "mod"):
+                    self.data = [data %  another for data in self.data]
+
+                elif (operator == "pow"):
+                    self.data = [data ** another for data in self.data]
 
                 return self
             else:
@@ -342,8 +354,32 @@ class Statistic(object):
     def __idiv__(self, another):
         return self.__truediv__(another)
 
+    def __mod__(self, another):
+        return self._operators(another, "mod")
 
+    def __imod__(self, another):
+        return self.__mod__(another)
 
+    def __pow__(self, another):
+        return self._operators(another, "pow")
+
+    def __ipow__(self, another):
+        return self.__pow__(another)
+
+    def __neg__(self):
+        self.data = [data * -1 for data in self.data]
+        return self        
+
+    def __abs__(self):
+        self.data = [abs(data) for data in self.data]
+        return self
+
+    def __int__(self):
+        self.data = [int(data) for data in self.data]
+        return self
+
+    def __float__(self):
+        return self
 
     def __len__(self):
         return len(self._data)
