@@ -1,7 +1,13 @@
 import re
 import glob
 import os.path
+from pathlib import Path
 import statistics
+try:
+    import cPickle as pickle
+except:
+    import pickle
+
 from  tkinter import Tk, filedialog
 
 
@@ -140,12 +146,15 @@ class Statistic(object):
 
 
     def _isnumeric(data):
-        try:
-            data = data.strip() if type(data)==str else data
-            if len(data) > 0:
-                return type(float(data)) == float
-            return False
-        except: 
+        if type(data) in [int, float]:
+            return True
+        elif type(data)==str:
+            try:
+                return True if (len(data.strip()) > 0 and type(float(data.strip())) == float) else False
+                
+            except ValueError: 
+                return False
+        else:
             return False
 
     @property
@@ -154,7 +163,7 @@ class Statistic(object):
 
     @property
     def trimmed_data(self):
-        return Statistic(list(filter(lambda x: ( x <= self.avg + (3*self.std) ) and  x >= self.avg - (3*self.std) ), self._data), parent = self)
+        return Statistic(list(filter(lambda x: ( x <= self.avg + (3*self.std) ) and  (x >= self.avg - (3*self.std) ), self._data)), parent = self)
 
     @property
     def title(self):
@@ -247,7 +256,7 @@ class Statistic(object):
             index = key[0]  if index < key[0] else ( key[-1] if index > key[-1] else index)
             result[index] += 1
 
-        return [[key, value] for key, value in result.items()]
+        return [[float("%.12f"%key), value] for key, value in result.items()]
 
     @property
     def len(self):
@@ -262,20 +271,79 @@ class Statistic(object):
         else:
             raise TypeError("data access with unsupported type %s " % type(index))
 
+    def _operators(self, another, operator):
+            if type(another) == Statistic:
+                # print(self.data, another.data if (self.len >= another.len) else another.data, self.data)
+                host_data, client_data = (self.data, another.data) if (self.len >= another.len) else (another.data, self.data)
+                if (operator == "add"):
+                    host_data = [data + client_data[i] if i < len(client_data) else data for i, data in enumerate(host_data) ]
+                        
+                elif (operator == "sub"):
+                    host_data = [data - client_data[i] if i < len(client_data) else data for i, data in enumerate(host_data) ]
 
-    # def __add__(self, another):
-    #     if type(another) == Statistic:
-    #         return Statistic(self.data + another.data, parent = self)
-    #     else if type(another) in [int, float]:
-    #         pass
-    #     else:
-    #         raise TypeError("add operation on %s to %s is not supported" % (type(self), type(another)))
+                elif (operator == "mul"):
+                    host_data = [data * client_data[i] if i < len(client_data) else data for i, data in enumerate(host_data) ]      
 
-    # def __and__(self, another):
-    #     if type(another) == Statistic:
-    #         return Statistic(self.data + another.data, parent = self)
-    #     else:
-    #         raise TypeError("add operation on %s to %s is not supported" % (type(self), type(another)))
+                elif (operator == "div"):
+                    host_data = [data / client_data[i] if i < len(client_data) else data for i, data in enumerate(host_data) ]
+
+                return Statistic(host_data, parent = self)
+
+            elif (type(another) in [int, float]):
+
+                if (operator == "add"):
+                    self.data = [data + another for data in self.data]
+
+                elif (operator == "sub"):
+                    self.data = [data - another for data in self.data]
+
+                elif (operator == "mul"):
+                    self.data = [data * another for data in self.data]
+
+                elif (operator == "div"):
+                    self.data = [data / another for data in self.data]
+
+                return self
+            else:
+                raise TypeError("__%s__ operation on %s to %s is not supported" % (operator, type(self), type(another)))
+        
+
+
+    def __add__(self, another):
+        return self._operators(another, "add")
+
+    def __iadd__(self, another):
+        return self.__add__(another)
+
+    def __radd__(self, another):
+        return self.__add__(another)
+
+    def __sub__(self, another):
+        return self._operators(another, "sub")
+
+    def __isub__(self, another):
+        return self.__sub__(another)
+
+    def __rsub__(self, another):
+        return self.__sub__(another)
+
+    def __mul__(self, another):
+        return self._operators(another, "mul")
+
+    def __imul__(self, another):
+        return self.__mul__(another)
+
+    def __rmul__(self, another):
+        return self.__mul__(another)
+
+    def __truediv__(self, another):
+        return self._operators(another, "div")
+
+    def __idiv__(self, another):
+        return self.__truediv__(another)
+
+
+
 
     def __len__(self):
         return len(self._data)
@@ -301,30 +369,62 @@ title: %s
 
 class File(object):
     file_types = (("csv files","*.csv"),("txt files","*.txt"),("all files","*.*"))
+    def __init__(self):
+        self._cache = cache
 
     def open_file_dialog():
         root = Tk()
         root.withdraw()
-        return filedialog.askopenfilename(initialdir = "/",title = "Select file", filetypes = File.file_types)
+        path = filedialog.askopenfilename(initialdir = File._load_cache(),title = "Select file", filetypes = File.file_types)
+        File._set_cache(path)
+        return path
 
     def open_path_dialog():
         root = Tk()
         root.withdraw()
-        return filedialog.askopenfilename(initialdir = "/",title = "Select folder", filetypes = File.file_types)
+        path = filedialog.askopenfilename(initialdir = File._load_cache(),title = "Select folder", filetypes = File.file_types)
+        File._set_cache(path)
+        return path
+
 
     def save_file_dialog():
         root = Tk()
         root.withdraw()        
-        return tkFileDialog.asksaveasfilename(initialdir = "/",title = "Select file", filetypes = File.file_types)
+        path =  tkFileDialog.asksaveasfilename(initialdir = File._load_cache(),title = "Select file", filetypes = File.file_types)
+        File._set_cache(path)
+        return path
 
+
+    def _load_cache():
+        path = "/path.cache"
+        file = Path(path)
+        if file.exists():
+            with open(path,'r') as file:
+                try:
+                    return file.read()
+                except:
+                    return "/"
+        else:
+            return "/"
+
+    def _set_cache(data):
+        path = "/path.cache"
+        file = Path(path)
+        with open(path,'w') as file:
+            file.write(data)
 
 
 if __name__ == '__main__':
 
-    file_name = "C:/Users/rawr/Downloads/MOCK_DATA.csv"
+    # file_name = "C:/Users/rawr/Downloads/MOCK_DATA.csv"
+    file_name = File.open_file_dialog()
     # file_list = Parse.file_in_path("C:/Users/rawr/Downloads/")
     # result_a  = Parse.multiple_csv(file_list, 0, [3])
-    reslut_b  = [data[0] for data in Parse.csv(file_name, 0, [6])]
+
+    # Parse.print(Parse.csv(file_name)[:20])
+
+    reslut_b  =  Parse.list_translate(Parse.csv(file_name, 1, [4, 5, 6, 7]))
+    
     # Parse.print(Parse.list_translate(reslut_b))
     # Parse.print(result_a, False, False)
     # # print(Parse.unit("a"))
@@ -342,12 +442,9 @@ if __name__ == '__main__':
 
     # print (s)
     # print(reslut_b)
-    a =Statistic([])
-
-    b = a.data = reslut_b
-
-    print(a)
-    print(a.max)
-    print(a.min)
-    print(a.len)
+    v00 = Statistic(reslut_b[0][:20], spec_high=1.2, spec_low=.8).in_spec_data 
+    v11 = Statistic(reslut_b[1][:20], spec_high=1.2, spec_low=.8).in_spec_data 
+    print(v00.data)
+    print(v11.data)
+    print((v00+v11).data)
 
