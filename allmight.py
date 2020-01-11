@@ -2,6 +2,7 @@ import re
 import glob
 import os.path
 from pathlib import Path
+import math
 import statistics
 try:
     import cPickle as pickle
@@ -134,6 +135,7 @@ class Statistic(object):
 
         self._data       = None
         self._uniformaty = None
+        self._sum        = None
         self._avg        = None
         self._std        = None
         self._uniformaty = None
@@ -157,13 +159,14 @@ class Statistic(object):
         else:
             return False
 
-    @property
+
     def in_spec_data(self):
         return Statistic(list(filter(lambda x: (True if (self.spec_high==None) else (x<=self.spec_high)) and (True if (self.spec_low==None) else (x>=self.spec_low)), self._data)), parent = self)
 
-    @property
-    def trimmed_data(self):
-        return Statistic(list(filter(lambda x: ( x <= self.avg + (3*self.std) ) and  (x >= self.avg - (3*self.std) ), self._data)), parent = self)
+
+    def trimmed_data(self, sigma = 3):
+        return Statistic(list(filter(lambda x: ( x <= self.avg + (sigma*self.std) ) and  (x >= self.avg - (sigma*self.std) ), self._data)), parent = self)
+
 
     @property
     def title(self):
@@ -180,16 +183,45 @@ class Statistic(object):
     @data.setter
     def data(self, data_list):
         self._data             = data_list if type(self._parent) == Statistic else [float(data) for data in data_list if (Statistic._isnumeric(data))]
+        self._set_not_updated()
+
+    def _set_not_updated(self):
         self._parent           = None
         self._avg_not_updated  = True
         self._std_not_updated  = True
         self._max_not_updated  = True
         self._min_not_updated  = True
+        self._sum_not_updated  = True
+
+    def append(self, data):
+        if (type(data) in [int, float]) or (type(data) == str and Statistic._isnumeric(data)):
+            self._data.append(float(data))
+        elif type(data) == Statistic:
+            self |= data
+        elif  type(data) == list:
+            self |= Statistic(data)
+        else:
+            raise TypeError ("append unsupported type {0}: {0}" % (type(data), data))
+
+    def pop(self, index):
+        self._set_not_updated()
+        return self._data.pop(index)
+
+    def remove(self, index):
+        self._set_not_updated()
+        return self._data.remove(index)
+    
+    @property
+    def sum(self):        
+        if (self._sum_not_updated):
+            self._sum = math.fsum(self._data)
+            self._sum_not_updated  = False
+        return self._sum
 
     @property
     def avg(self):
         if (self._avg_not_updated):
-            self._avg = statistics.mean(self._data)  if len(self) > 0 else None
+            self._avg = self.sum/self.len if self.len > 0 else None
             self._avg_not_updated  = False
         return self._avg
 
@@ -238,7 +270,7 @@ class Statistic(object):
         self._gen_in_spec_data_list()
 
 
-    def frequency_chart(self, scale = []):
+    def frequency_chart(self, scale = [], display = False):
         result    = {}
         data_list = self._data
         
@@ -255,8 +287,15 @@ class Statistic(object):
             key   = list(result.keys())
             index = key[0]  if index < key[0] else ( key[-1] if index > key[-1] else index)
             result[index] += 1
+        
+        if display:
+            template = ""
+            for key, value in result.items():
+                template += ("{:.8f} : {:d}\n".format(key, value))
+            return template
 
         return [[float("%.12f"%key), value] for key, value in result.items()]
+
 
     @property
     def len(self):
@@ -268,10 +307,12 @@ class Statistic(object):
                 return self.data[index]
             else:
                 raise IndexError("data access with index %d out of range" % index)
+        elif type(index) == slice:
+            return Statistic([self[i] for i in range(*index.indices(len(self)))], parent = self)
         else:
             raise TypeError("data access with unsupported type %s " % type(index))
 
-    def _operators(self, another, operator):
+    def _operators(self, another, operator, mode = None):
             if type(another) == Statistic:
                 # print(self.data, another.data if (self.len >= another.len) else another.data, self.data)
                 host_data, client_data = (self.data, another.data) if (self.len >= another.len) else (another.data, self.data)
@@ -287,34 +328,52 @@ class Statistic(object):
                 elif (operator == "div"):
                     host_data = [data /  client_data[i] if i < len(client_data) else data for i, data in enumerate(host_data) ]
 
+                elif (operator == "and"):
+                    host_data = [data for data in self.data if data in another.data ]
+
+                elif (operator == "or"):
+                    host_data =  self.data + another.data
+
+                elif (operator == "xor"):
+                    host_data =  [data for data in (self.data + another.data) if not (data in (self.data or another.data))  ]
+
                 elif (operator == "mod"):
                     host_data = [data %  client_data[i] if i < len(client_data) else data for i, data in enumerate(host_data) ]
 
                 elif (operator == "pow"):
                     host_data = [data ** client_data[i] if i < len(client_data) else data for i, data in enumerate(host_data) ]
 
+                if mode == "i":
+                    self._data = host_data
+                    self._set_not_updated()
+                    return self
+
                 return Statistic(host_data, parent = self)
 
             elif (type(another) in [int, float]):
 
                 if (operator == "add"):
-                    self.data = [data +  another for data in self.data]
+                    self._data = [data +  another for data in self.data]
 
                 elif (operator == "sub"):
-                    self.data = [data -  another for data in self.data]
+                    self._data = [data -  another for data in self.data]
 
                 elif (operator == "mul"):
-                    self.data = [data *  another for data in self.data]
+                    self._data = [data *  another for data in self.data]
 
                 elif (operator == "div"):
-                    self.data = [data /  another for data in self.data]
+                    self._data = [data /  another for data in self.data]
 
                 elif (operator == "mod"):
-                    self.data = [data %  another for data in self.data]
+                    self._data = [data %  another for data in self.data]
 
                 elif (operator == "pow"):
-                    self.data = [data ** another for data in self.data]
+                    self._data = [data ** another for data in self.data]
 
+                else:
+                    raise TypeError("__%s__ operation on %s to %s is not supported" % (operator, type(self), type(another)))
+
+                self._set_not_updated()
                 return self
             else:
                 raise TypeError("__%s__ operation on %s to %s is not supported" % (operator, type(self), type(another)))
@@ -325,7 +384,7 @@ class Statistic(object):
         return self._operators(another, "add")
 
     def __iadd__(self, another):
-        return self.__add__(another)
+        return self._operators(another, "add", mode = "i")
 
     def __radd__(self, another):
         return self.__add__(another)
@@ -334,7 +393,7 @@ class Statistic(object):
         return self._operators(another, "sub")
 
     def __isub__(self, another):
-        return self.__sub__(another)
+        return self._operators(another, "sub", mode = "i")
 
     def __rsub__(self, another):
         return self.__sub__(another)
@@ -343,7 +402,7 @@ class Statistic(object):
         return self._operators(another, "mul")
 
     def __imul__(self, another):
-        return self.__mul__(another)
+        return self._operators(another, "mul", mode = "i")
 
     def __rmul__(self, another):
         return self.__mul__(another)
@@ -352,19 +411,32 @@ class Statistic(object):
         return self._operators(another, "div")
 
     def __idiv__(self, another):
-        return self.__truediv__(another)
+        return self._operators(another, "div", mode = "i")
+
+    def __and__(self, another):
+        return self._operators(another, "and")
+
+    def __iand__(self, another):
+        return self._operators(another, "and", mode = "i")
+
+    def __or__(self, another):
+        print("K")
+        return self._operators(another, "or")
+
+    def __ior__(self, another):
+        return self._operators(another, "or", mode = "i")
 
     def __mod__(self, another):
         return self._operators(another, "mod")
 
     def __imod__(self, another):
-        return self.__mod__(another)
+        return self._operators(another, "mod", mode = "i")
 
     def __pow__(self, another):
         return self._operators(another, "pow")
 
     def __ipow__(self, another):
-        return self.__pow__(another)
+        return self._operators(another, "pow", mode = "i")
 
     def __neg__(self):
         self.data = [data * -1 for data in self.data]
@@ -384,24 +456,29 @@ class Statistic(object):
     def __len__(self):
         return len(self._data)
 
+    def __repr__(self):
+        return "<Statistic, title: %s, len: %s>" % (self.title, self.len)
+
     def __str__(self):
-        std_p3s = None if None in [self.avg, self.std] else (self.avg + (3*self.std))
-        std_m3s = None if None in [self.avg, self.std] else (self.avg - (3*self.std))
+        tempate = ""
+        avg_p6s = None if None in [self.avg, self.std] else (self.avg + (6*self.std))
+        avg_p3s = None if None in [self.avg, self.std] else (self.avg + (3*self.std))
+        avg_m3s = None if None in [self.avg, self.std] else (self.avg - (3*self.std))
+        avg_m6s = None if None in [self.avg, self.std] else (self.avg - (6*self.std))
+        items   = [   "title", "avg+6s", "avg+3s",    "avg", "avg-3s", "avg-6s", "stddev",    "max",    "min",            "U%",       "spec_H",      "spec_L",    "sum", "length"]
+        values  = [self.title,  avg_p6s,  avg_p3s, self.avg,  avg_m3s,  avg_m6s, self.std, self.max, self.min, self.uniformaty, self.spec_high, self.spec_low, self.sum, self.len]
 
-        return u"""
-title: %s
- +3s : %s
- avg : %s
- -3s : %s
- std : %s
- max : %s
- min : %s
-  U%% : %s
- USL : %s
- LSL : %s
- len : %s
-""" % (self.title, std_p3s, self.avg, std_m3s, self.std, self.max, self.min, self.uniformaty, self.spec_high, self.spec_low, self.len)
+        for index, item in enumerate(items):
+            value     = values[index]
+            if type(value) in [type(None), str]:
+                tempate  += "{:>10} : {:}\n".format(item, value)
+            elif type(value) == float:
+                if (int(value)==value):
+                    tempate  += "{:>10} : {:d}\n".format(item, int(value))
+                else:
+                    tempate  += "{:>10} : {:.8f}\n".format(item, value)
 
+        return ( tempate)
 
 class File(object):
     file_types = (("csv files","*.csv"),("txt files","*.txt"),("all files","*.*"))
@@ -454,33 +531,12 @@ if __name__ == '__main__':
 
     # file_name = "C:/Users/rawr/Downloads/MOCK_DATA.csv"
     file_name = File.open_file_dialog()
-    # file_list = Parse.file_in_path("C:/Users/rawr/Downloads/")
-    # result_a  = Parse.multiple_csv(file_list, 0, [3])
 
-    # Parse.print(Parse.csv(file_name)[:20])
+    reslut  =  Parse.list_translate(Parse.csv(file_name, 1, [3, 4, 5, 6]))
 
-    reslut_b  =  Parse.list_translate(Parse.csv(file_name, 1, [4, 5, 6, 7]))
-    
-    # Parse.print(Parse.list_translate(reslut_b))
-    # Parse.print(result_a, False, False)
-    # # print(Parse.unit("a"))
+    v0= Statistic(reslut[0]).trimmed_data()
 
-    # (?# file_name = r"C:\Users\rawr\Desktop\rk\1NJF299.1_01_CP1.csv")
-    # file_list = Parse.file_in_path(r"C:\Users\rawr\Desktop\rk")
-    # result_a  = Parse.multiple_csv(file_list, 10, [2, 3, 4])
-    # Parse.print(result_a)
-    # reslut_b  = Parse.csv(file_name, 10, [2, 3, 4])
-    # Parse.print(reslut_b)
-    # file_name ='C:/Users/rawr/Desktop/a.csv'# File.open_file_dialog()
-    # print (file_name)
-    # d_data = [float(*row_data) for row_data in Parse.csv(file_name)]
-    # s = Statistic(d_data)
+    print(v0)
+    print(v0.frequency_chart(display= True))
 
-    # print (s)
-    # print(reslut_b)
-    v00 = Statistic(reslut_b[0][:20], spec_high=1.2, spec_low=.8).in_spec_data 
-    v11 = Statistic(reslut_b[1][:20], spec_high=1.2, spec_low=.8).in_spec_data 
-    print(v00.data)
-    print(v11.data)
-    print((v00+v11).data)
 
