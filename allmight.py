@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 import re
 import glob
 import os.path
@@ -32,19 +34,31 @@ class Parse(object):
         print("* parse error with data: %s     regex: %s" % (data_str, Parse.derived_unit_regex) )
         return data_str if (if_error==None) else if_error
 
-    def csv(file_path, start_row = 0, columns = [], delimiters = "[,]+", translate = False):
+    def csv(file_path, start_stop_row = [], columns = [], delimiters = "[,]+", translate = False):
         result         = []
         tresult        = []
         column_counter = []
+        start_row      = -1
+        stop_row       = float("inf")  
 
         if not os.path.isfile(file_path):
             raise FileExistsError()
 
         split_regex = ("[%s]+" % "".join(set(delimiters))) if isinstance(delimiters, (list, tuple, set)) else delimiters
 
-        with open(file_path) as file:
+        with open(file_path, encoding="utf-8") as file:
+
+            if (type(start_stop_row) == int):
+                start_row = start_stop_row
+            elif start_stop_row==[]:                
+                start_row = 0
+            elif type(start_stop_row) == list and len(start_stop_row)==2:
+                start_row, stop_row = start_stop_row
+            else:
+                raise TypeError("Parse.csv dose not support paramater with %s type or %s value" % (type(start_stop_row), start_stop_row) )
+
             for row, line in enumerate(file):
-                if row >= start_row:
+                if row >= start_row and row <= stop_row:
                     splited = [ data.strip() for data in re.split(split_regex, line.strip())]
                     if columns:
                         result.append([ data for column, data in enumerate(splited) if column in columns])
@@ -531,12 +545,10 @@ if __name__ == '__main__':
 
     # file_name = "C:/Users/rawr/Downloads/MOCK_DATA.csv"
     file_name = File.open_file_dialog()
+    print(file_name)
 
-    reslut  =  Parse.list_translate(Parse.csv(file_name, 1, [3, 4, 5, 6]))
+    reslut  =  (Parse.csv(file_name))
 
-    v0= Statistic(reslut[0]).trimmed_data()
-
-    print(v0)
-    print(v0.frequency_chart(display= True))
+    Parse.print(reslut)
 
 
