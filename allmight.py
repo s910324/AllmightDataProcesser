@@ -154,6 +154,7 @@ class Statistic(object):
         self._std        = None
         self._uniformaty = None
         self._outlier    = None
+        self._yield_rate = None
         self._parent     = parent
         self._spec_high  = spec_high
         self._spec_low   = spec_low
@@ -200,12 +201,13 @@ class Statistic(object):
         self._set_not_updated()
 
     def _set_not_updated(self):
-        self._parent           = None
-        self._avg_not_updated  = True
-        self._std_not_updated  = True
-        self._max_not_updated  = True
-        self._min_not_updated  = True
-        self._sum_not_updated  = True
+        self._parent            = None
+        self._avg_not_updated   = True
+        self._std_not_updated   = True
+        self._max_not_updated   = True
+        self._min_not_updated   = True
+        self._sum_not_updated   = True
+        self._yield_not_updated = True
 
     def append(self, data):
         if (type(data) in [int, float]) or (type(data) == str and Statistic._isnumeric(data)):
@@ -262,7 +264,6 @@ class Statistic(object):
 
     @property
     def uniformaty(self):
-
         return (self.max-self.min)/(2*self.avg) if not( None in [self.avg, self.max, self.min]) else None
 
     @property
@@ -282,6 +283,15 @@ class Statistic(object):
     def spec_low(self, spec_low):
         self._spec_low = spec_low
         self._gen_in_spec_data_list()
+
+    @property
+    def yield_rate(self):
+        if not (None in [self.spec_high, self.spec_low]):
+            if (self._yield_not_updated):
+                self._yield_rate = sum(  (1 if (data <= self.spec_high) and (data >= self.spec_low) else 0) for data in self._data) / len(self)
+                self._sum_not_updated  = False
+            return self._yield_rate
+        return None
 
 
     def frequency_chart(self, scale = [], display = False):
@@ -479,20 +489,20 @@ class Statistic(object):
         avg_p3s = None if None in [self.avg, self.std] else (self.avg + (3*self.std))
         avg_m3s = None if None in [self.avg, self.std] else (self.avg - (3*self.std))
         avg_m6s = None if None in [self.avg, self.std] else (self.avg - (6*self.std))
-        items   = [   "title", "avg+6s", "avg+3s",    "avg", "avg-3s", "avg-6s", "stddev",    "max",    "min",            "U%",       "spec_H",      "spec_L",    "sum", "length"]
-        values  = [self.title,  avg_p6s,  avg_p3s, self.avg,  avg_m3s,  avg_m6s, self.std, self.max, self.min, self.uniformaty, self.spec_high, self.spec_low, self.sum, self.len]
+        items   = [   "title", "avg+6s", "avg+3s",    "avg", "avg-3s", "avg-6s", "stddev",    "max",    "min",            "U%",       "spec_H",      "spec_L",         "yield",    "sum", "length"]
+        values  = [self.title,  avg_p6s,  avg_p3s, self.avg,  avg_m3s,  avg_m6s, self.std, self.max, self.min, self.uniformaty, self.spec_high, self.spec_low, self.yield_rate, self.sum, self.len]
 
         for index, item in enumerate(items):
             value     = values[index]
             if type(value) in [type(None), str]:
                 tempate  += "{:>10} : {:}\n".format(item, value)
-            elif type(value) == float:
+            elif type(value) in [float, int]:
                 if (int(value)==value):
                     tempate  += "{:>10} : {:d}\n".format(item, int(value))
                 else:
                     tempate  += "{:>10} : {:.8f}\n".format(item, value)
 
-        return ( tempate)
+        return (tempate)
 
 class File(object):
     file_types = (("csv files","*.csv"),("txt files","*.txt"),("all files","*.*"))
