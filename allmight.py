@@ -304,7 +304,8 @@ class Statistic(object):
         start, stop, step = scale
         sections          = int(( stop - start ) / step)
 
-        _ = [ result.update( { (start + (step * segment)) : 0 } )  for segment in range(sections)]
+
+        _ = [ result.update( { (start + (step * segment)) : 0 } )  for segment in range(sections + 1)]
 
         for data in data_list:
             index = start + (step * int((data-start)/step))
