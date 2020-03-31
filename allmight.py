@@ -155,6 +155,9 @@ class Statistic(object):
         self._uniformaty = None
         self._outlier    = None
         self._yield_rate = None
+        self._ca         = None
+        self._cp         = None
+        self._cpk        = None
         self._parent     = parent
         self._spec_high  = spec_high
         self._spec_low   = spec_low
@@ -208,6 +211,9 @@ class Statistic(object):
         self._min_not_updated   = True
         self._sum_not_updated   = True
         self._yield_not_updated = True
+        self._ca_not_updated    = True
+        self._cp_not_updated    = True
+        self._cpk_not_updated   = True
 
     def append(self, data):
         if (type(data) in [int, float]) or (type(data) == str and Statistic._isnumeric(data)):
@@ -293,6 +299,32 @@ class Statistic(object):
             return self._yield_rate
         return None
 
+    @property
+    def ca(self):
+        if not (None in [self.spec_high, self.spec_low]):
+            if (self._ca_not_updated):
+                self._ca = (((self.spec_high + self.spec_low) / 2.0) - self.avg) / (self.spec_high - self.spec_low)
+                self._ca_not_updated = False
+            return self._ca
+        return None
+            
+    @property
+    def cp(self):
+        if not (None in [self.spec_high, self.spec_low]):
+            if (self._cp_not_updated):
+                self._cp = (self.spec_high - self.spec_low) / (6 * self.std)
+                self._cp_not_updated = False
+            return self._cp
+        return None
+    
+    @property
+    def cpk(self):
+        if not (None in [self.spec_high, self.spec_low]):
+            if (self._cpk_not_updated):
+                self._cpk = (1 - self.ca) * self.cp
+                self._cpk_not_updated = False
+            return self._cpk
+        return None          
 
     def frequency_chart(self, scale = [], display = False):
         result    = {}
