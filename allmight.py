@@ -2,16 +2,24 @@
 # -*- coding: utf-8 -*-
 import re
 import glob
-import os.path
-from pathlib import Path
 import math
+import os.path
 import statistics
+
+from pathlib         import Path
+from tkinter         import Tk, filedialog
+from scipy.optimize  import curve_fit
+
 try:
     import cPickle as pickle
 except:
     import pickle
 
-from  tkinter import Tk, filedialog
+try:
+    import numpy   as np
+except :
+    pass
+
 
 
 class Parse(object):
@@ -142,7 +150,6 @@ class Parse(object):
 
     def print(*args, **kwargs):
         print( Parse._format_into_string(*args, **kwargs))
-
 
 class Statistic(object):
     def __init__(self, data, spec_high=None, spec_low=None, title=None, parent=None):
@@ -536,6 +543,17 @@ class Statistic(object):
                     tempate  += "{:>10} : {:.8f}\n".format(item, value)
 
         return (tempate)
+
+class Fitting(object):
+    def __init__(self, data, parent=None):
+        pass
+
+    def fit_gaussian(x, y, mean, sigma):
+        popt, pcov = curve_fit(Fitting.gauss_function, x, y, p0=[1,mean,sigma])
+        return popt, pcov
+
+    def gauss_function(x, a, x0, sigma):
+        return a*np.exp(-(x-x0)**2/(2*sigma**2))
 
 class File(object):
     file_types = (("csv files","*.csv"),("txt files","*.txt"),("all files","*.*"))
